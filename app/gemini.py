@@ -19,44 +19,72 @@ go_emotions_list = [
     "relief", "remorse", "sadness", "surprise", "neutral"
 ]
 
-response = client.models.generate_content(
-    model="gemini-2.0-flash",
-    contents=f"""
-Analyze the following journal entry and identify the **single most predominant emotion** from the provided GoEmotions list. Choose only one emotion.
+async def getEmotion(journal_entry):
+    response = client.models.generate_content(
+        model="gemini-2.0-flash",
+        contents=f"""
+    Analyze the following journal entry and identify up to 5 emotions from the provided GoEmotions list. Rank them by confidence score in descending order.
 
-GoEmotions List: {', '.join(go_emotions_list)}
+    GoEmotions List: {', '.join(go_emotions_list)}
 
-Journal Entry: \"{journal_entry_text}\"
+    Journal Entry: {journal_entry}
 
-Return the output strictly in the following JSON format with the confidence score as a number with 3 decimal places:
-{{
-"emotion": "<identified_emotion>",
-"confidence": <confidence_score_as_decimal_with_3_places>
-}}
+    Return the output strictly in the following JSON format with confidence scores as numbers with 2 decimal places:
+    {{
+      "emotions": [
+        {{ "emotion_name": "<emotion1>", "confidence": <confidence_score> }},
+        {{ "emotion_name": "<emotion2>", "confidence": <confidence_score> }},
+        {{ "emotion_name": "<emotion3>", "confidence": <confidence_score> }}
+      ]
+    }}
 
-Example of proper formatting:
-{{
-"emotion": "disappointment",
-"confidence": 0.875
-}}
-"""
-)
+    Rules:
+    - Include 1-5 emotions maximum
+    - Order by confidence score (highest first)
+    - Confidence scores should be between 0.00 and 1.00
+    - Use exactly 2 decimal places for confidence scores
 
-try:
-    # Parse the response text as JSON
-    emotion_output = json.loads(response.text)
-    
-    # Format the output to ensure confidence has 3 decimal places
-    formatted_output = {
-        "emotion": emotion_output["emotion"],
-        "confidence": round(float(emotion_output["confidence"]), 3)
-    }
-    
-    # Print the formatted JSON output
-    print(json.dumps(formatted_output, indent=2))
-except json.JSONDecodeError as e:
-    print(f"Error decoding JSON: {e}")
-    print(f"Raw model response: {response.text}")
-except Exception as e:
-    print(f"An unexpected error occurred: {e}")
-    print(f"Raw model response: {response.text}")
+    Example of proper formatting:
+    {{
+      "emotions": [
+        {{ "emotion_name": "joy", "confidence": 0.98 }},
+        {{ "emotion_name": "sadness", "confidence": 0.75 }},
+        {{ "emotion_name": "annoyance", "confidence": 0.60 }}
+      ]
+    }}
+    """
+    )
+
+    try:
+        response_text = response.text.strip()
+        
+        start_idx = response_text.find('{')
+        end_idx = response_text.rfind('}') + 1
+        
+        if start_idx == -1 or end_idx == 0:
+            raise ValueError("No JSON found in response")
+        
+        json_text = response_text[start_idx:end_idx]
+        
+        emotion_output = json.loads(json_text)
+
+        # Validate and format the emotions array
+        formatted_emotions = []
+        for emotion_data in emotion_output.get("emotions", [])[:5]:  # Limit to 5 emotions
+            formatted_emotion = {
+                "emotion_name": emotion_data["emotion_name"],
+                "confidence": round(float(emotion_data["confidence"]), 2)
+            }
+            formatted_emotions.append(formatted_emotion)
+
+        formatted_output = {
+            "emotions": formatted_emotions
+        }
+
+        print(json.dumps(formatted_output, indent=2))
+        
+        return formatted_output
+    except json.JSONDecodeError as e:
+        return {"error": f"failed to parse JSON: {response.text}"}
+    except Exception as e:
+        return {"error": f"failed to get emotion: {e}"}

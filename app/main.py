@@ -11,9 +11,13 @@ class Item(BaseModel):
     price: float
     is_offer: Union[bool, None] = None
 
-@app.get("/")
+from fastapi.responses import HTMLResponse
+
+name = 'rj'
+
+@app.get("/", response_class=HTMLResponse)
 def read_root():
-    return {"Hello": "World"}
+    return f"<h1>Hello World {name}! </h1>"
 
 
 @app.get("/items/{item_id}")

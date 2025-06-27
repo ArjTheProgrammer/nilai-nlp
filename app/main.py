@@ -1,30 +1,14 @@
-from typing import Union
+from fastapi import Depends, FastAPI
 
-from fastapi import FastAPI
-from pydantic import BaseModel
+from .routers import emotions
 
 app = FastAPI()
 
 
-class Item(BaseModel):
-    name: str
-    price: float
-    is_offer: Union[bool, None] = None
-
-from fastapi.responses import HTMLResponse
-
-name = 'rj'
-
-@app.get("/", response_class=HTMLResponse)
-def read_root():
-    return f"<h1>Hello World {name}! </h1>"
+app.include_router(emotions.router)
 
 
-@app.get("/items/{item_id}")
-def read_item(item_id: int, q: Union[str, None] = None):
-    return {"item_id": item_id, "q": q}
 
-
-@app.put("/items/{item_id}")
-def update_item(item_id: int, item: Item):
-    return {"item_name": item.name, "item_id": item_id}
+@app.get("/")
+async def root():
+    return {"message": "Hello Bigger Applications!"}

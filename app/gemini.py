@@ -29,7 +29,7 @@ async def getEmotion(journal_entry):
 
     Journal Entry: {journal_entry}
 
-    Return the output strictly in the following JSON format with confidence scores as numbers with 2 decimal places:
+    Return the output strictly in the following JSON format with confidence scores as numbers with 5 decimal places:
     {{
       "emotions": [
         {{ "emotion_name": "<emotion1>", "confidence": <confidence_score> }},
@@ -39,7 +39,7 @@ async def getEmotion(journal_entry):
     }}
 
     Rules:
-    - Include 1-5 emotions maximum
+    - if the LLM identified more than 1 emotion, 5 emotions is maximum and the confidence of the emotions should be minimum 0.75
     - Order by confidence score (highest first)
     - Confidence scores should be between 0.00 and 1.00
     - Use exactly 2 decimal places for confidence scores

@@ -32,9 +32,9 @@ async def getEmotion(journal_entry):
     Return the output strictly in the following JSON format with confidence scores as numbers with 5 decimal places:
     {{
       "emotions": [
-        {{ "emotion_name": "<emotion1>", "confidence": <confidence_score> }},
-        {{ "emotion_name": "<emotion2>", "confidence": <confidence_score> }},
-        {{ "emotion_name": "<emotion3>", "confidence": <confidence_score> }}
+        {{ "emotion": "<emotion1>", "confidence": <confidence_score> }},
+        {{ "emotion": "<emotion2>", "confidence": <confidence_score> }},
+        {{ "emotion": "<emotion3>", "confidence": <confidence_score> }}
       ]
     }}
 
@@ -47,9 +47,9 @@ async def getEmotion(journal_entry):
     Example of proper formatting:
     {{
       "emotions": [
-        {{ "emotion_name": "joy", "confidence": 0.98 }},
-        {{ "emotion_name": "sadness", "confidence": 0.75 }},
-        {{ "emotion_name": "annoyance", "confidence": 0.60 }}
+        {{ "emotion": "joy", "confidence": 0.98 }},
+        {{ "emotion": "sadness", "confidence": 0.75 }},
+        {{ "emotion": "annoyance", "confidence": 0.60 }}
       ]
     }}
     """
@@ -72,7 +72,7 @@ async def getEmotion(journal_entry):
         formatted_emotions = []
         for emotion_data in emotion_output.get("emotions", [])[:5]:  # Limit to 5 emotions
             formatted_emotion = {
-                "emotion_name": emotion_data["emotion_name"],
+                "emotion": emotion_data["emotion"],
                 "confidence": round(float(emotion_data["confidence"]), 2)
             }
             formatted_emotions.append(formatted_emotion)

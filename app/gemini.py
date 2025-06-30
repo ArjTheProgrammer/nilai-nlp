@@ -39,7 +39,7 @@ async def getEmotion(journal_entry):
     }}
 
     Rules:
-    - if the LLM identified more than 1 emotion, 5 emotions is maximum and the confidence of the emotions should be minimum 0.75
+    - if the LLM identified more than 1 emotion, 5 emotions is maximum and the confidence of the emotions should be minimum 0.80
     - Order by confidence score (highest first)
     - Confidence scores should be between 0.00 and 1.00
     - Use exactly 2 decimal places for confidence scores
@@ -77,13 +77,9 @@ async def getEmotion(journal_entry):
             }
             formatted_emotions.append(formatted_emotion)
 
-        formatted_output = {
-            "emotions": formatted_emotions
-        }
-
-        print(json.dumps(formatted_output, indent=2))
+        print(json.dumps(formatted_emotions, indent=2))
         
-        return formatted_output
+        return formatted_emotions
     except json.JSONDecodeError as e:
         return {"error": f"failed to parse JSON: {response.text}"}
     except Exception as e:

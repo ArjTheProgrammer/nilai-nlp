@@ -23,7 +23,7 @@ async def getEmotion(journal_entry):
     response = client.models.generate_content(
         model="gemini-2.0-flash",
         contents=f"""
-    Analyze the following journal entry and identify up to 5 emotions from the provided GoEmotions list. Rank them by confidence score in descending order.
+    Analyze the following journal entry and identify atleast 1 and up to 5 emotions from the provided GoEmotions list. Rank them by confidence score in descending order.
 
     GoEmotions List: {', '.join(go_emotions_list)}
 
@@ -39,7 +39,9 @@ async def getEmotion(journal_entry):
     }}
 
     Rules:
-    - if the LLM identified more than 1 emotion, 5 emotions is maximum and the confidence of the emotions should be minimum 0.80
+    - ALWAYS identify at least 1 emotion from the GoEmotions list (use "neutral" if no clear emotion is present)
+    - If multiple emotions are identified, maximum 5 emotions with confidence minimum 0.60
+    - If only one emotion is identified, confidence can be as low as 0.50
     - Order by confidence score (highest first)
     - Confidence scores should be between 0.00 and 1.00
     - Use exactly 2 decimal places for confidence scores
@@ -73,14 +75,24 @@ async def getEmotion(journal_entry):
         for emotion_data in emotion_output.get("emotions", [])[:5]:  # Limit to 5 emotions
             formatted_emotion = {
                 "emotion": emotion_data["emotion"],
-                "confidence": round(float(emotion_data["confidence"]), 2)
+                "confidence": round(float(emotion_data["confidence"]), 5)
             }
             formatted_emotions.append(formatted_emotion)
+
+        
+        if not formatted_emotions:
+            formatted_emotions = [{"emotion": "neutral", "confidence": 0.5}]
 
         print(json.dumps(formatted_emotions, indent=2))
         
         return formatted_emotions
     except json.JSONDecodeError as e:
-        return {"error": f"failed to parse JSON: {response.text}"}
+        print(f"JSON decode error: {e}, falling back to neutral")
+        fallback_emotions = [{"emotion": "neutral", "confidence": 0.50}]
+        print(json.dumps(fallback_emotions, indent=2))
+        return fallback_emotions
     except Exception as e:
-        return {"error": f"failed to get emotion: {e}"}
+        print(f"General error: {e}, falling back to neutral")
+        fallback_emotions = [{"emotion": "neutral", "confidence": 0.50}]
+        print(json.dumps(fallback_emotions, indent=2))
+        return fallback_emotions

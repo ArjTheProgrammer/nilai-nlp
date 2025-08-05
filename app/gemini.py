@@ -101,20 +101,23 @@ async def getDailyQuote(journal_entries):
         1. Relates to their current emotional state or journey
         2. Offers encouragement, wisdom, or perspective
         3. Helps them reflect on their experiences
-        4. only use quotes from stoic philosophers
+        4. Only use quotes from stoic philosophers
 
         Rules:
         1. The format is heavily inspired from The Daily Stoic by Ryan Holiday
-        2. Make the title creative
-        3. The explanation should be the explanation of the quote not how it relates to the journal entries. Do not explicitely say that it reflects! his week avoid it.
+        2. Make the title creative and meaningful
+        3. The explanation should focus on the timeless wisdom of the quote itself, not explicitly connecting it to the journal entries
+        4. Write the explanation in Ryan Holiday's style - accessible, practical, and relatable to modern life
+        5. Use contemporary examples and scenarios that make ancient wisdom relevant today
+        6. Write with clarity and conviction, as Holiday does in The Daily Stoic
 
         Return strictly in JSON format:
         {{
-          "title": "Daily Reflection",
+          "title": "Creative title for the reflection",
           "quote": "The actual quote text",
           "author": "Author name",
           "citation": "Source or book if applicable",
-          "explanation": "2-3 sentences explaining why this quote relates to their recent journal entries and how it might help them"
+          "explanation": "Write in Ryan Holiday's distinctive style from The Daily Stoic - make ancient wisdom accessible and practical for modern readers. Use contemporary examples, clear language, and focus on actionable insights. Length can vary naturally based on the depth of the wisdom being shared."
         }}
         """)
         
@@ -156,30 +159,31 @@ async def getDailySummary(journal_entries):
     try:
         model = genai.GenerativeModel('gemini-2.0-flash')
         response = model.generate_content(f"""
-        Analyze the following journal entries from the past 7 days and create a thoughtful daily summary:
+        Analyze the following journal entries from the past 7 days and create a thoughtful weekly summary:
         
         Journal Entries (Past 7 Days):
         {entries_text}
         
-        Create a daily reflection that:
+        Create a weekly reflection that:
         1. Identifies emotional patterns and trends over the week
         2. Highlights significant events, growth, or challenges
         3. Notes how the person's mindset has evolved
         4. Offers gentle insights and supportive observations
-        5. Recognizes progress and areas for continued attention
+        5. Recognizes progress and areas for continued growth
         6. Connects themes across the different days
         
-        Write in a warm, supportive tone as if you're a caring friend who has been following their journey all week.
-        Focus on the overall arc and patterns rather than day-by-day details.
+        Write in a warm, supportive tone as if you're a thoughtful observer who understands the journey of personal growth.
+        Focus on the overall patterns and evolution rather than day-by-day details.
+        Be encouraging while remaining authentic and grounded.
         
         Return strictly in JSON format:
         {{
-          "summary": "A 3-4 paragraph reflection on their past 7 days, focusing on patterns, growth, and insights",
+          "summary": "A 3-4 paragraph reflection on their past 7 days, focusing on patterns, growth, and insights written in a supportive yet insightful tone",
           "key_themes": ["theme1", "theme2", "theme3"],
           "emotional_trends": {{
             "dominant_emotions": ["emotion1", "emotion2"], 
             "emotional_arc": "Brief description of how emotions evolved over the week",
-            "notable_shifts": "Any significant emotional changes or breakthroughs"
+            "notable_shifts": "Any significant emotional changes or breakthroughs observed"
           }}
         }}
         """)
@@ -201,11 +205,11 @@ async def getDailySummary(journal_entries):
     except Exception as e:
         print(f"Error generating summary: {e}")
         return {
-            "summary": "Your journaling journey continues to unfold with each entry, revealing patterns of growth and self-discovery.",
-            "key_themes": ["self-reflection", "personal growth"],
+            "summary": "Your journaling journey continues to unfold with each entry, revealing patterns of growth and self-discovery. Each reflection adds another layer to your understanding of yourself and your experiences.",
+            "key_themes": ["self-reflection", "personal growth", "mindful awareness"],
             "emotional_trends": {
-                "dominant_emotions": ["contemplative"],
-                "emotional_arc": "Steady progress in self-awareness",
-                "notable_shifts": "Continued commitment to introspection"
+                "dominant_emotions": ["contemplative", "introspective"],
+                "emotional_arc": "Steady progress in self-awareness and emotional understanding",
+                "notable_shifts": "Continued commitment to personal growth through reflective practice"
             }
         }

@@ -80,9 +80,57 @@ async def getEmotion(journal_entry):
 
 
 async def getDailyQuote(journal_entries):
-    """Generate an inspiring quote based on recent journal entries."""
+    """Generate an inspiring quote based on recent journal entries or a general inspiring quote if no entries."""
+    
+    # Handle case where no journal entries are provided
     if not journal_entries:
-        raise ValueError("No journal entries provided")
+        try:
+            model = genai.GenerativeModel('gemini-2.0-flash')
+            response = model.generate_content(f"""
+            Provide an inspiring and motivational quote from a stoic philosopher that encourages self-reflection and journaling.
+            
+            Rules:
+            1. The format is heavily inspired from The Daily Stoic by Ryan Holiday
+            2. Make the title creative and meaningful, focusing on the value of self-reflection or starting fresh
+            3. The explanation should focus on the timeless wisdom of the quote itself
+            4. Write the explanation in Ryan Holiday's style - accessible, practical, and relatable to modern life
+            5. Use contemporary examples and scenarios that make ancient wisdom relevant today
+            6. Write with clarity and conviction, as Holiday does in The Daily Stoic
+            7. Encourage the practice of journaling and self-reflection
+
+            Return strictly in JSON format:
+            {{
+              "title": "Creative title encouraging reflection or fresh starts",
+              "quote": "The actual quote text",
+              "author": "Author name",
+              "citation": "Source or book if applicable",
+              "explanation": "Write in Ryan Holiday's distinctive style from The Daily Stoic - make ancient wisdom accessible and practical for modern readers. Use contemporary examples, clear language, and focus on actionable insights that encourage starting or continuing a journaling practice."
+            }}
+            """)
+            
+            response_text = response.text.strip()
+            
+            # Extract JSON from response
+            start_idx = response_text.find('{')
+            end_idx = response_text.rfind('}') + 1
+            
+            if start_idx == -1 or end_idx == 0:
+                raise ValueError("No JSON found in response")
+            
+            json_text = response_text[start_idx:end_idx]
+            quote_output = json.loads(json_text)
+            
+            return quote_output
+            
+        except Exception as e:
+            print(f"Error generating quote: {e}")
+            return {
+                "title": "Begin Again",
+                "quote": "Every new beginning comes from some other beginning's end.",
+                "author": "Seneca",
+                "citation": "Letters from a Stoic",
+                "explanation": "Today marks a fresh start in your journey of self-reflection. The Stoics understood that every moment offers us the opportunity to begin anew, to choose our thoughts and actions with intention. Your journaling practice doesn't require a perfect streak or profound insights from day one. It simply requires you to begin, to put pen to paper, and to engage honestly with your inner world. Each entry, no matter how brief or seemingly ordinary, is a step toward greater self-awareness and wisdom."
+            }
     
     entries_text = "\n\n".join([
         f"Title: {entry['title']}\nContent: {entry['content']}\nEmotions: {entry.get('emotions', [])}\nDate: {entry['created_at']}"

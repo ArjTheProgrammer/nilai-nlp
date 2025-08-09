@@ -1,5 +1,4 @@
 from fastapi import Depends, FastAPI
-from .gemini import getDailyQuote
 from .routers import emotions, insights
 
 app = FastAPI()

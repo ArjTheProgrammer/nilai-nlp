@@ -1,6 +1,6 @@
 import asyncio
 import json
-from gemini import getDailyQuote, getEmotion, getDailySummary
+import httpx
 
 # Sample 7-day journal dummy data
 sample_journal_entries = [
@@ -76,31 +76,61 @@ sample_journal_entries = [
     }
 ]
 
-async def test_functions():
-    print("Testing getEmotion function:")
-    print("=" * 50)
+async def test_routes():
+    base_url = "http://localhost:8000"  # Adjust port if different
     
-    # Test getEmotion with a sample text
-    test_text = "I'm so excited about my new job but also nervous about the challenges ahead!"
-    emotions = await getEmotion(test_text)
-    print(f"Input: {test_text}")
-    print(f"Emotions detected: {json.dumps(emotions, indent=2)}")
-    
-    print("\n" + "=" * 50)
-    print("Testing getDailyQuote function:")
-    print("=" * 50)
-    
-    # Test getDailyQuote with sample journal entries
-    quote = await getDailyQuote(sample_journal_entries)
-    print(f"Generated Quote: {json.dumps(quote, indent=2)}")
-    
-    print("\n" + "=" * 50)
-    print("Testing getDailySummary function:")
-    print("=" * 50)
-    
-    # Test getDailySummary with sample journal entries
-    summary = await getDailySummary(sample_journal_entries)
-    print(f"Generated Summary: {json.dumps(summary, indent=2)}")
+    async with httpx.AsyncClient() as client:
+        print("Testing /emotions/ route:")
+        print("=" * 50)
+        
+        # Test emotion route - corrected endpoint
+        test_text = "I'm so excited about my new job but also nervous about the challenges ahead!"
+        emotion_payload = {"text": test_text}
+        
+        try:
+            response = await client.post(f"{base_url}/emotions/", json=emotion_payload)
+            response.raise_for_status()
+            emotions = response.json()
+            print(f"Input: {test_text}")
+            print(f"Emotions detected: {json.dumps(emotions, indent=2)}")
+        except httpx.RequestError as e:
+            print(f"Error calling emotion endpoint: {e}")
+        except httpx.HTTPStatusError as e:
+            print(f"HTTP error {e.response.status_code}: {e.response.text}")
+        
+        print("\n" + "=" * 50)
+        print("Testing /insights/quote route:")
+        print("=" * 50)
+        
+        # Test quote route
+        quote_payload = {"entries": sample_journal_entries}
+        
+        try:
+            response = await client.post(f"{base_url}/insights/quote", json=quote_payload)
+            response.raise_for_status()
+            quote = response.json()
+            print(f"Generated Quote: {json.dumps(quote, indent=2)}")
+        except httpx.RequestError as e:
+            print(f"Error calling quote endpoint: {e}")
+        except httpx.HTTPStatusError as e:
+            print(f"HTTP error {e.response.status_code}: {e.response.text}")
+        
+        print("\n" + "=" * 50)
+        print("Testing /insights/daily-summary route:")
+        print("=" * 50)
+        
+        # Test daily summary route
+        summary_payload = {"entries": sample_journal_entries}
+        
+        try:
+            response = await client.post(f"{base_url}/insights/daily-summary", json=summary_payload)
+            response.raise_for_status()
+            summary = response.json()
+            print(f"Generated Summary: {json.dumps(summary, indent=2)}")
+        except httpx.RequestError as e:
+            print(f"Error calling daily-summary endpoint: {e}")
+        except httpx.HTTPStatusError as e:
+            print(f"HTTP error {e.response.status_code}: {e.response.text}")
 
 if __name__ == "__main__":
-    asyncio.run(test_functions())
+    asyncio.run(test_routes())

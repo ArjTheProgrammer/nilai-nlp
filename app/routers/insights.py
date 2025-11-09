@@ -37,19 +37,24 @@ async def get_daily_quote(request: QuoteRequest):
 @router.get("/summary")
 async def get_summary(entries: str):
     try:
-        # Parse the entries from query parameter
         entries_list = json.loads(entries)
         summary_result = await getDailySummary(entries_list)
         
-        # Ensure the response is valid JSON
+        # The getDailySummary function should always return a dict, not a string
+        # If it returns a string, it means there was an error in parsing the AI response
         if isinstance(summary_result, str):
-            try:
-                # Try to parse as JSON to validate
-                json.loads(summary_result)
-                return {"summary": summary_result}
-            except json.JSONDecodeError:
-                # If it's not valid JSON, wrap it
-                return {"summary": summary_result}
+            # Log the problematic response for debugging
+            print(f"getDailySummary returned a string instead of dict: {summary_result}")
+            # Return a default summary structure
+            return {
+                "summary": "Unable to generate summary at this time. Please try again later.",
+                "key_themes": ["reflection", "personal growth"],
+                "emotional_trends": {
+                    "dominant_emotions": ["neutral"],
+                    "emotional_arc": "Processing...",
+                    "notable_shifts": "Unable to analyze at this time"
+                }
+            }
         
         return summary_result
     except json.JSONDecodeError as e:
@@ -64,15 +69,20 @@ async def get_daily_summary(request: DailySummaryRequest):
         entries_dict = [entry.model_dump() for entry in request.entries]
         summary_result = await getDailySummary(entries_dict)
         
-        # Ensure the response is valid JSON
+        # The getDailySummary function should always return a dict, not a string
         if isinstance(summary_result, str):
-            try:
-                # Try to parse as JSON to validate
-                parsed = json.loads(summary_result)
-                return parsed
-            except json.JSONDecodeError:
-                # If it's not valid JSON, wrap it
-                return {"summary": summary_result}
+            # Log the problematic response for debugging
+            print(f"getDailySummary returned a string instead of dict: {summary_result}")
+            # Return a default summary structure
+            return {
+                "summary": "Unable to generate summary at this time. Please try again later.",
+                "key_themes": ["reflection", "personal growth"],
+                "emotional_trends": {
+                    "dominant_emotions": ["neutral"],
+                    "emotional_arc": "Processing...",
+                    "notable_shifts": "Unable to analyze at this time"
+                }
+            }
         
         return summary_result
     except Exception as e:
